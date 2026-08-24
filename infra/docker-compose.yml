@@ -11,6 +11,19 @@ services:
       CHAOS_ERROR_RATE: ${CHAOS_ERROR_RATE:-0}
     restart: unless-stopped
 
+  traffic:
+    image: curlimages/curl:8.11.1
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      'while true; do
+        curl -s -o /dev/null -X POST -H "Content-Type: application/json"
+        -d "{\"item\":\"synthetic\",\"amount\":9.99}" http://shop:3000/checkout || true;
+        sleep 0.25;
+      done'
+    depends_on:
+      - shop
+    restart: unless-stopped
+
   prometheus:
     image: prom/prometheus:v3.1.0
     volumes:
