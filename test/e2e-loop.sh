@@ -116,10 +116,23 @@ else
   echo "FAIL  triage: no approval gate"; fail=$((fail+1))
 fi
 
-if grep -qE '"content":"0\.[0-9]' "$SESSION_LOG" 2>/dev/null; then
-  echo "PASS  triage: metric evidence present"; pass=$((pass+1))
+METRIC_OK=$(python3 -c "
+import json, re
+for line in open('$SESSION_LOG'):
+    line = line.strip()
+    if not line.startswith('data: '): continue
+    try: d = json.loads(line[6:])
+    except: continue
+    if d.get('type') == 'tool.response':
+        if re.search(r'0\.\d{2,}', str(d.get('content',''))):
+            print('yes'); break
+else:
+    print('no')
+" 2>/dev/null || echo no)
+if [ "$METRIC_OK" = "yes" ]; then
+  echo "PASS  triage: metric evidence present (Prometheus decimal in tool response)"; pass=$((pass+1))
 else
-  echo "FAIL  triage: no metric evidence"; fail=$((fail+1))
+  echo "FAIL  triage: no metric evidence in tool responses"; fail=$((fail+1))
 fi
 
 # --- 4. Approve + verify ---
