@@ -1,6 +1,6 @@
 ---
 name: oncall-triage
-description: Read-only incident triage playbook for SENTRY. Use when investigating an alert or outage for any service. Covers metric queries, deploy correlation, log analysis, and when to stop before acting.
+description: Incident triage playbook for SENTRY. Use when investigating an alert or outage for any service. Covers metric queries, deploy correlation via GitHub commits, log analysis, approval gate, rollback, recovery verification, and RCA issue filing.
 ---
 
 # On-call Triage
@@ -20,6 +20,15 @@ When asked to investigate an alert or anomaly:
 5. Compute all aggregations/ratios via code execution in the sandbox, not mental math.
 6. Produce a verdict: suspected culprit commit SHA + commit timestamp + correlation evidence (error rate before/after, latency delta) + confidence level. State clearly whether the timestamp is commit time or confirmed deploy time.
 7. STOP. Do not call any write/destructive tool. Recommend the action and wait for human approval.
+
+## Post-Approval (after human clicks Allow)
+
+8. Execute the approved rollback action (e.g., `lab_restore` via sentry-lab MCP).
+9. Wait 30 seconds, then query Prometheus again to verify error rate is recovering toward baseline.
+10. File a GitHub issue on the repo with the RCA body:
+    - Title: `RCA: <alert-name> - <culprit-commit-sha> - <date>`
+    - Body must include: incident timeline, error rate before/during/after, suspected culprit commit + deploy timestamp, PromQL queries used, recovery verification query + result, and recommended follow-up actions.
+    - This uses the GitHub MCP create_issue tool, which will trigger an approval gate - this is expected and good for the demo.
 
 Rules of engagement:
 - Read-only tools are always allowed without asking.
