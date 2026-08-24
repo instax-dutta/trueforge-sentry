@@ -1,9 +1,12 @@
+# Build context = repository ROOT (see infra/docker-compose.yml) so the shared
+# tsconfig.base.json can be placed where app/tsconfig.json's extends expects it.
 FROM node:22.14-alpine AS build
+COPY tsconfig.base.json /
+COPY app/package.json /app/
 WORKDIR /app
-COPY package.json ./
 RUN corepack enable && npm install --no-save
-COPY tsconfig.json ./
-COPY src ./src
+COPY app/tsconfig.json ./
+COPY app/src ./src
 RUN npx tsc -p tsconfig.json
 
 FROM node:22.14-alpine
