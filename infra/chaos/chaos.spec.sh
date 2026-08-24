@@ -6,8 +6,8 @@ set -euo pipefail
 
 PROM_URL="${PROM_URL:-http://localhost:9090}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=chaos/common.sh
-source "$SCRIPT_DIR/chaos/common.sh"
+# shellcheck source=common.sh
+source "$SCRIPT_DIR/common.sh"
 
 pass=0; fail=0
 check() { # name expr comparator threshold
