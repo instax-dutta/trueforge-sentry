@@ -11,15 +11,14 @@ export interface BuildAppOptions {
 let requestCounter = 0;
 
 /**
- * Deterministic 32-bit LCG in [0,1), seeded per app instance so chaos behavior
- * is reproducible across test runs regardless of module-global state.
- * Math.imul keeps the multiply exact within uint32 range (Qodo finding #1).
+ * Deterministic LCG in [0,1), seeded per app instance so chaos behavior is
+ * reproducible across test runs regardless of module-global state.
  */
 function makePrng(seed = 42): () => number {
-  let s = seed >>> 0;
+  let s = seed;
   return () => {
-    s = (Math.imul(s, 1103515245) + 12345) >>> 0;
-    return s / 2 ** 32;
+    s = (s * 1103515245 + 12345) % 2147483648;
+    return s / 2147483648;
   };
 }
 
@@ -46,32 +45,23 @@ export async function buildApp(opts: BuildAppOptions = {}): Promise<FastifyInsta
   });
 
   app.post("/checkout", async (request, reply) => {
+    const end = metrics.checkoutLatency.startTimer();
     if (latencyMs > 0) await sleep(latencyMs);
 
     if (errorRate > 0 && prng() < errorRate) {
+      metrics.http5xx.inc();
+      end();
       return reply.status(503).send({ status: "gateway_unavailable" });
     }
 
     const body = (request.body ?? {}) as { item?: string; amount?: number };
+    end();
     return {
       status: "approved",
       transactionId: nextTransactionId(),
       item: body.item ?? null,
       amount: body.amount ?? null,
     };
-  });
-
-  // Latency + 5xx accounting for ALL checkout outcomes, measured at response
-  // completion (Qodo findings #2 and #4): covers chaos 503s and any real error.
-  app.addHook("onRequest", async (_request, reply) => {
-    (reply as unknown as { elapsed: number }).elapsed = Date.now();
-  });
-  app.addHook("onResponse", async (request, reply) => {
-    if (request.raw.url && request.raw.url.startsWith("/checkout")) {
-      const started = (reply as unknown as { elapsed?: number }).elapsed ?? Date.now();
-      metrics.checkoutLatency.observe((Date.now() - started) / 1000);
-      if (reply.statusCode >= 500) metrics.http5xx.inc();
-    }
   });
 
   app.get("/metrics", async (_request, reply) => {
