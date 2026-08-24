@@ -1,0 +1,30 @@
+# Environment - never commit real credentials
+.env
+.env.local
+.env*.local
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+.next/
+out/
+coverage/
+
+# Runtime data
+*.sqlite
+*.sqlite3
+data/
+test/fixtures/*.recorded.json.tmp
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Logs / temp
+*.log
+tmp/
