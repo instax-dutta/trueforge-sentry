@@ -6,13 +6,15 @@ When a payment-failures alert fires, SENTRY investigates over MCP (Grafana/Prome
 
 **Status:** bootstrap. Architecture and wave plan land in this PR's wake; this README grows into the full harness story as components merge.
 
-## Quickstart (coming online during Wave G1-G2)
+## Quickstart
 
 ```bash
 cp .env.example .env            # fill placeholders
-docker compose up -d            # victim shop + prometheus + grafana
-# TrueForge hosted: see docs/ (upstream clone + compose)
+docker compose -f infra/docker-compose.yml up -d --build
+# -> shop :3000 | prometheus :9090 | grafana :3001
 ```
+
+TrueForge harness runs separately in hosted mode - see `docs/`.
 
 ## License
 

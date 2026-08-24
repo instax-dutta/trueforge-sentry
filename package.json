@@ -4,10 +4,12 @@
   "version": "0.1.0",
   "description": "Licence-to-act incident responder on TrueForge",
   "license": "MIT",
-  "engines": { "node": ">=22.14" },
+  "engines": {
+    "node": ">=22.14"
+  },
   "scripts": {
-    "test": "pnpm -r --if-present test",
-    "lint": "pnpm -r --if-present lint",
-    "typecheck": "pnpm -r --if-present typecheck"
+    "test": "pnpm --filter @sentry/app test",
+    "lint": "echo 'eslint config lands with dashboard PR'",
+    "typecheck": "pnpm --filter @sentry/app typecheck"
   }
 }
