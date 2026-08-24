@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Shared chaos helpers. PROM_URL aware.
 
-prom_wait() { # prom_url expr comparator threshold timeout_s
+wait_for_prom() { # prom_url expr comparator threshold timeout_s
   local url="$1" expr="$2" cmp="$3" thr="$4" timeout="${5:-90}"
   local enc deadline=$(date +%s)
   enc=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$expr")
