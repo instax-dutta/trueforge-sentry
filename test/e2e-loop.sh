@@ -84,7 +84,7 @@ GATE_TC=""
 for attempt in 1 2; do
   curl -sf -N --max-time 180 -X POST "$TF_URL/api/v1/sessions/$SID/turns" \
     -H "Content-Type: application/json" \
-    -d '{"input":[{"type":"user.message","content":"Investigate payment-failures alert. You MUST call these tools in order: 1) Grafana query_prometheus for sum(rate(http_5xx_total[30m])) with datasource PBFA97CFB590B2093 to get current error rate, 2) GitHub list_commits for instax-dutta/trueforge-sentry (last 10 commits) - match each commit timestamp against the spike window to identify which commit aligns with the regression onset (commit time is a proxy for deploy time), 3) State your correlation verdict (suspected culprit commit + evidence), 4) Then you MUST call sentry-lab lab_restore to propose the fix - this will trigger human approval, do NOT execute without it."}],"stream":true}' \
+    -d '{"input":[{"type":"user.message","content":"Investigate payment-failures alert. Follow this EXACT sequence - do NOT skip any step: 1) Call grafana query_prometheus for sum(rate(http_5xx_total[30m])) with datasource PBFA97CFB590B2093, 2) Call github list_commits for instax-dutta/trueforge-sentry (last 10), 3) Call sentry-lab lab_restore to propose the rollback fix. Step 3 is MANDATORY - it triggers the human approval gate. Do NOT stop after step 2. Do NOT analyze without calling all three tools first."}],"stream":true}' \
     > "$SESSION_LOG" 2>&1
 
   if grep -q "tool.approval_required" "$SESSION_LOG"; then
