@@ -19,17 +19,18 @@ When asked to investigate an alert or anomaly:
    d. If the GitHub MCP has deploy status or annotation data, cross-reference for confirmation.
 5. Compute all aggregations/ratios via code execution in the sandbox, not mental math.
 6. Produce a verdict: suspected culprit commit SHA + commit timestamp + correlation evidence (error rate before/after, latency delta) + confidence level. State clearly whether the timestamp is commit time or confirmed deploy time.
-7. STOP. Do not call any write/destructive tool. Recommend the action and wait for human approval.
+7. Propose the rollback tool call (e.g., `lab_restore` via sentry-lab MCP). This triggers the TrueForge approval gate - the harness emits `tool.approval_required` and pauses. Wait for the human to click Allow or Deny.
 
-## Post-Approval (after human clicks Allow)
+## After Approval (human clicks Allow)
 
-8. Execute the approved rollback action (e.g., `lab_restore` via sentry-lab MCP).
-9. Wait 30 seconds, then query Prometheus again to verify error rate is recovering toward baseline.
-10. File a GitHub issue on the repo with the RCA body:
+The harness executes the pending rollback call automatically - no second tool call needed.
+
+8. Poll Prometheus until error rate returns to baseline (query every 10s, timeout 120s). Use the same PromQL from step 2.
+9. File a GitHub issue on the repo with the RCA body:
     - Title: `RCA: <alert-name> - <culprit-commit-sha> - <date>`
     - Body must include: incident timeline, error rate before/during/after, suspected culprit commit + deploy timestamp, PromQL queries used, recovery verification query + result, and recommended follow-up actions.
     - This uses the GitHub MCP create_issue tool, which will trigger an approval gate - this is expected and good for the demo.
-11. Emit a Generative UI summary card with before/after numbers:
+10. Emit a Generative UI summary card with before/after numbers:
     - Incident timeline (alert fired -> triage started -> cause identified -> rollback approved -> recovery verified)
     - Error rate chart: baseline value, peak during incident, post-recovery value
     - Culprit: commit SHA + deploy timestamp
