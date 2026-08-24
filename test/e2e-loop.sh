@@ -124,7 +124,7 @@ for line in open('$SESSION_LOG'):
     try: d = json.loads(line[6:])
     except: continue
     if d.get('type') == 'tool.response':
-        if re.search(r'0\.\d{2,}', str(d.get('content',''))):
+        if re.search(r'\d+\.\d+', str(d.get('content',''))):
             print('yes'); break
 else:
     print('no')
