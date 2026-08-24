@@ -38,14 +38,17 @@ cp packages/trueforge/.env.example packages/trueforge/.env
 docker compose up --build     # serves at http://localhost:8791
 
 # 4. Configure the agent (via TrueForge UI at :8791)
-#    - Add Grafana MCP (header auth, port 8000 on pelican or local)
+#    - Add Grafana MCP (header auth, pointing at your Grafana instance)
 #    - Add GitHub MCP (OAuth or PAT)
 #    - Register skills: oncall-triage, payments-escalation
 #    - Set model: your OpenAI-compatible gateway
 
-# 5. Run the golden-loop e2e test
+# 5. Run the golden-loop e2e test (requires SSH access to chaos host)
 PROM_URL=http://localhost:9090 TF_URL=http://localhost:8791 \
+  REMOTE_HOST=you@your-host REMOTE_DIR=~/sentry/infra \
   bash test/e2e-loop.sh
+# Note: e2e-loop.sh SSHes to a remote host for chaos injection.
+# For local-only testing, run chaos commands manually (see Chaos lab section).
 ```
 
 ## How the demo works
@@ -58,7 +61,7 @@ SENTRY runs a 10-step investigation loop:
 4. **Bisect deploys** -- query GitHub for recent commits, match timestamps against the spike window
 5. **Aggregate** in sandbox -- error counts, latency deltas, correlation evidence
 6. **Verdict** -- culprit commit SHA, confidence level, evidence list
-7. **Approval gate** -- propose rollback via sentry-lab MCP; harness pauses, waits for human Allow/Deny
+7. **Approval gate** -- propose rollback via sentry-lab MCP; harness emits `tool.approval_required` and pauses, waits for human Allow/Deny. After Allow, the harness executes the pending call automatically -- no second rollback call needed.
 8. **Recover** -- poll Prometheus until error rate returns to baseline
 9. **File RCA** -- GitHub issue with timeline, error rates, culprit, PromQL used
 10. **Summary card** -- Generative UI streams before/after chart inline in chat
@@ -78,7 +81,7 @@ Hot-load demo: start with only `oncall-triage` attached, then add `payments-esca
 
 ## Chaos lab
 
-The victim stack is a可控 chaos lab -- we break it on demand, not wait for a real outage.
+The victim stack is a controllable chaos lab -- we break it on demand, not wait for a real outage.
 
 ```bash
 # Inject bad deploy (error rate spikes)
