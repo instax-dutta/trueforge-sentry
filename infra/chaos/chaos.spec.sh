@@ -27,15 +27,15 @@ if [ "$prom_up" != "200" ]; then
 fi
 
 # 1. healthy baseline: no 5xx flowing
-"$SCRIPT_DIR/chaos/restore.sh" >/dev/null
+"$SCRIPT_DIR/restore.sh" >/dev/null
 check "baseline: 5xx rate near zero" 'sum(rate(http_5xx_total[30s])) or vector(0)' '<' 0.05
 
 # 2. bad deploy spikes errors
-"$SCRIPT_DIR/chaos/inject-bad-deploy.sh" >/dev/null
+"$SCRIPT_DIR/inject-bad-deploy.sh" >/dev/null
 check "after inject: 5xx rate > 0.2/s" 'sum(rate(http_5xx_total[30s]))' '>' 0.2
 
 # 3. restore returns to baseline
-"$SCRIPT_DIR/chaos/restore.sh" >/dev/null
+"$SCRIPT_DIR/restore.sh" >/dev/null
 check "after restore: 5xx back near zero" 'sum(rate(http_5xx_total[30s])) or vector(0)' '<' 0.05
 
 echo "== result: $pass passed, $fail failed =="
