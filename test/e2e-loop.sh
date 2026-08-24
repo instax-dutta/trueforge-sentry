@@ -49,7 +49,7 @@ say "step 3: SENTRY triage"
 SID=$(curl -sf -X POST "$TF_URL/api/v1/sessions" -H "Content-Type: application/json" -d '{"agent":{"name":"sentry-oncall"}}' | python3 -c "import json,sys;print(json.load(sys.stdin)['data']['id'])")
 curl -sf -N --max-time 180 -X POST "$TF_URL/api/v1/sessions/$SID/turns" \
   -H "Content-Type: application/json" \
-  -d '{"input":[{"type":"user.message","content":"Investigate the payment-failures alert on the shop service. Triage read-only using Grafana and GitHub, correlate via sandbox if needed, then propose the rollback. Do not execute without approval."}],"stream":true}' > "$SESSION_LOG" 2>&1
+  -d '{"input":[{"type":"user.message","content":"Investigate the payment-failures alert: fan out triage using Grafana query_prometheus for sum(rate(http_5xx_total[30m])) and checkout p95, use GitHub to list recent commits on instax-dutta/trueforge-sentry, and use sandbox Python to correlate error rate vs latency. Then propose rollback via the sentry-lab tool - do NOT execute without human approval."}],"stream":true}' > "$SESSION_LOG" 2>&1
 if grep -q "tool.approval_required" "$SESSION_LOG"; then
   echo "PASS  triage: approval gate fired"
   pass=$((pass+1))
