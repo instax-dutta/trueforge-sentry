@@ -1,0 +1,35 @@
+name: sentry
+
+services:
+  shop:
+    build: ../app
+    ports:
+      - "3000:3000"
+    environment:
+      SHOP_PORT: 3000
+      CHAOS_LATENCY_MS: ${CHAOS_LATENCY_MS:-0}
+      CHAOS_ERROR_RATE: ${CHAOS_ERROR_RATE:-0}
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-sentry-local}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
