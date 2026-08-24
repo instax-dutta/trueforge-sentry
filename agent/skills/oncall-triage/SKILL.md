@@ -1,6 +1,6 @@
 ---
 name: oncall-triage
-description: Read-only incident triage playbook for SENTRY. Use when investigating an alert or outage for any service. Covers metric queries, deploy correlation, log analysis, and when to stop before acting.
+description: Incident triage playbook for SENTRY. Use when investigating an alert or outage for any service. Covers metric queries, deploy correlation via GitHub commits, log analysis, approval gate, rollback, recovery verification, and RCA issue filing.
 ---
 
 # On-call Triage
@@ -19,7 +19,23 @@ When asked to investigate an alert or anomaly:
    d. If the GitHub MCP has deploy status or annotation data, cross-reference for confirmation.
 5. Compute all aggregations/ratios via code execution in the sandbox, not mental math.
 6. Produce a verdict: suspected culprit commit SHA + commit timestamp + correlation evidence (error rate before/after, latency delta) + confidence level. State clearly whether the timestamp is commit time or confirmed deploy time.
-7. STOP. Do not call any write/destructive tool. Recommend the action and wait for human approval.
+7. Propose the rollback tool call (e.g., `lab_restore` via sentry-lab MCP). This triggers the TrueForge approval gate - the harness emits `tool.approval_required` and pauses. Wait for the human to click Allow or Deny.
+
+## After Approval (human clicks Allow)
+
+The harness executes the pending rollback call automatically - no second tool call needed.
+
+8. Poll Prometheus until error rate returns to baseline (query every 10s, timeout 120s). Use the same PromQL from step 2.
+9. File a GitHub issue on the repo with the RCA body:
+    - Title: `RCA: <alert-name> - <culprit-commit-sha> - <date>`
+    - Body must include: incident timeline, error rate before/during/after, suspected culprit commit + deploy timestamp, PromQL queries used, recovery verification query + result, and recommended follow-up actions.
+    - This uses the GitHub MCP create_issue tool, which will trigger an approval gate - this is expected and good for the demo.
+10. Emit a Generative UI summary card with before/after numbers:
+    - Incident timeline (alert fired -> triage started -> cause identified -> rollback approved -> recovery verified)
+    - Error rate chart: baseline value, peak during incident, post-recovery value
+    - Culprit: commit SHA + deploy timestamp
+    - Resolution: what was done, verification query + result
+    - This streams as an inline React card in the chat, not a markdown image.
 
 Rules of engagement:
 - Read-only tools are always allowed without asking.
