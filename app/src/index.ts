@@ -1,6 +1,11 @@
 import { buildApp } from "./server.js";
 
-const port = Number(process.env.SHOP_PORT ?? 3000);
+function parsePort(raw: string | undefined, fallback: number): number {
+  const n = Number(raw);
+  return Number.isInteger(n) && n > 0 && n < 65536 ? n : fallback;
+}
+
+const port = parsePort(process.env.SHOP_PORT, 3000);
 const host = process.env.HOST ?? "0.0.0.0";
 
 const app = await buildApp();
