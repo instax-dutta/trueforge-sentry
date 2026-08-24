@@ -2,7 +2,9 @@ name: sentry
 
 services:
   shop:
-    build: ../app
+    build:
+      context: ..
+      dockerfile: app/Dockerfile
     ports:
       - "3000:3000"
     environment:
