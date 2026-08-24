@@ -29,6 +29,12 @@ When asked to investigate an alert or anomaly:
     - Title: `RCA: <alert-name> - <culprit-commit-sha> - <date>`
     - Body must include: incident timeline, error rate before/during/after, suspected culprit commit + deploy timestamp, PromQL queries used, recovery verification query + result, and recommended follow-up actions.
     - This uses the GitHub MCP create_issue tool, which will trigger an approval gate - this is expected and good for the demo.
+11. Emit a Generative UI summary card with before/after numbers:
+    - Incident timeline (alert fired -> triage started -> cause identified -> rollback approved -> recovery verified)
+    - Error rate chart: baseline value, peak during incident, post-recovery value
+    - Culprit: commit SHA + deploy timestamp
+    - Resolution: what was done, verification query + result
+    - This streams as an inline React card in the chat, not a markdown image.
 
 Rules of engagement:
 - Read-only tools are always allowed without asking.
