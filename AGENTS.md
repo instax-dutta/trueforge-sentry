@@ -7,6 +7,7 @@
 
 - SENTRY - an on-call incident responder on TrueForge, built for The Agent Harness Hackathon (WeMakeDevs x TrueFoundry x Qodo x OpenAI), Aug 24-30 2026
 - Five harness signals must be demo-visible: real MCP tools, sandbox execution, human approval gate before irreversible actions, subagent fan-out, session persistence across restart
+- Triage workflow: classify alert -> query Prometheus -> correlate GitHub commit timestamps (proxy for deploy time) -> sandbox aggregation -> verdict -> STOP for approval -> rollback -> verify -> file RCA issue -> emit Generative UI summary
 - Wave plan and acceptance gates: see planning vault `solid-plan.md` Section D; model routing: `docs` of vault `AGENT-OPTIMIZATION.md`; test law: `docs/TDD-PROTOCOL.md`
 
 ## Binding Constraints

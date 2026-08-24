@@ -14,11 +14,11 @@ When asked to investigate an alert or anomaly:
 3. Compare against baseline. State numbers exactly as returned by tools - never estimate mentally.
 4. If metrics are elevated, look for a cause:
    a. Query GitHub for recent commits on the repo (`list_commits` with the service repo, last 10 commits).
-   b. Match each commit timestamp against the spike window (when error rate crossed threshold).
-   c. Identify the commit whose deploy time aligns with the regression onset - this is the suspected culprit.
+   b. Match each commit timestamp against the spike window (when error rate crossed threshold). Note: commit time is a proxy for deploy time; if Grafana deploy annotations or GitHub Deployments API data is available, prefer those for actual deploy timestamps.
+   c. Identify the commit whose timestamp aligns closest to the regression onset - this is the suspected culprit.
    d. If the GitHub MCP has deploy status or annotation data, cross-reference for confirmation.
 5. Compute all aggregations/ratios via code execution in the sandbox, not mental math.
-6. Produce a verdict: suspected culprit commit SHA + deploy timestamp + correlation evidence (error rate before/after deploy, latency delta) + confidence level.
+6. Produce a verdict: suspected culprit commit SHA + commit timestamp + correlation evidence (error rate before/after, latency delta) + confidence level. State clearly whether the timestamp is commit time or confirmed deploy time.
 7. STOP. Do not call any write/destructive tool. Recommend the action and wait for human approval.
 
 Rules of engagement:
