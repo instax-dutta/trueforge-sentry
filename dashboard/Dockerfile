@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY tsconfig.json next.config.mjs ./
 RUN corepack enable && npm ci
+COPY lib ./lib
 COPY app ./app
 ENV NODE_ENV=production
 ENV PORT=3002
