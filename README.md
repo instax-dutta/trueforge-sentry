@@ -134,6 +134,10 @@ PROM_URL=http://localhost:9090 TF_URL=http://localhost:8791 bash test/e2e-loop.s
 # Hot-load demo: skill attachment via API
 TF_URL=http://localhost:8791 bash test/hot-load-skills.sh
 
+# Persistence restart: session survives server restart
+TF_URL=http://localhost:8791 REMOTE_HOST=you@your-host \
+  REMOTE_TF_DIR='~/sentry/trueforge-upstream' bash test/persistence-restart.sh
+
 # Chaos spec: inject + restore + Prometheus verification
 bash infra/chaos/chaos.spec.sh
 ```
