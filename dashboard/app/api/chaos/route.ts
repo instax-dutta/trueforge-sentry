@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isValidAction, isAuthorized, parseLabOutcome, type ChaosAction } from "../../../lib/chaos";
 
 const LAB_MCP_URL = process.env.LAB_MCP_URL ?? "http://172.17.0.1:8100/mcp";
 const LAB_TOKEN = process.env.LAB_MCP_TOKEN ?? "";
@@ -8,8 +9,6 @@ const LAB_TOKEN = process.env.LAB_MCP_TOKEN ?? "";
 const OPERATOR_KEY = process.env.OPERATOR_KEY ?? "";
 
 export const dynamic = "force-dynamic";
-
-import { isValidAction, isAuthorized, parseLabOutcome, type ChaosAction } from "../../../lib/chaos";
 
 function authHeaders(extra: Record<string, string> = {}): Record<string, string> {
   const h: Record<string, string> = { "Content-Type": "application/json", ...extra };
@@ -45,13 +44,13 @@ async function callLab(action: ChaosAction): Promise<string> {
   });
   const d = (await callRes.json()) as Parameters<typeof parseLabOutcome>[0];
   const outcome = parseLabOutcome(d);
-  if (!outcome.ok) throw new Error(outcome.error);
+  if (outcome.ok === false) throw new Error(outcome.error);
   return outcome.output;
 }
 
 export async function POST(req: Request) {
   const opKey = req.headers.get("x-operator-key");
-  if (!isAuthorized(opKey)) {
+  if (!isAuthorized(opKey, OPERATOR_KEY)) {
     return NextResponse.json({ ok: false, error: "unauthorized: bad operator key" }, { status: 401 });
   }
   let action: unknown;

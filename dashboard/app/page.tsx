@@ -114,7 +114,7 @@ export default function Home() {
           >
             Inject bad deploy
           </button>
-          <button className="safe" disabled={busy !== null} onClick={() => chaos("restore")}>
+          <button className="safe" disabled={busy !== null} onClick={() => executeChaos("restore")}>
             Restore healthy
           </button>
           {busy && <span>running {busy}...</span>}
