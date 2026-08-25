@@ -41,7 +41,16 @@ compose_remote() {
     restore|*) err_rate="0" ;;
   esac
   ssh -o BatchMode=yes "$REMOTE_HOST" \
-    "cd $REMOTE_DIR && CHAOS_ERROR_RATE=$err_rate CHAOS_LATENCY_MS=$lat_ms docker compose up -d shop" >/dev/null 2>&1
+    "cd $REMOTE_DIR && CHAOS_ERROR_RATE=$err_rate CHAOS_LATENCY_MS=$lat_ms docker compose up -d shop" 2>&1 | tail -1
+  local rc=${PIPESTATUS[0]}
+  if [ "$rc" -ne 0 ]; then
+    say "WARN  compose_remote($1) ssh exit $rc - retrying once"
+    sleep 5
+    ssh -o BatchMode=yes "$REMOTE_HOST" \
+      "cd $REMOTE_DIR && CHAOS_ERROR_RATE=$err_rate CHAOS_LATENCY_MS=$lat_ms docker compose up -d shop" >/dev/null 2>&1 || {
+      echo "FATAL: chaos injection failed twice (ssh/compose)"; exit 3;
+    }
+  fi
 }
 
 wait_prom() { # query comparator threshold timeout_s
@@ -87,19 +96,20 @@ for attempt in 1 2; do
     -d '{"input":[{"type":"user.message","content":"Investigate payment-failures alert. Follow this EXACT sequence - do NOT skip any step: 1) Call grafana query_prometheus for sum(rate(http_5xx_total[30m])) with datasource PBFA97CFB590B2093, 2) Call github list_commits for instax-dutta/trueforge-sentry (last 10), 3) Call sentry-lab lab_restore to propose the rollback fix. Step 3 is MANDATORY - it triggers the human approval gate. Do NOT stop after step 2. Do NOT analyze without calling all three tools first."}],"stream":true}' \
     > "$SESSION_LOG" 2>&1
 
-  if grep -q "tool.approval_required" "$SESSION_LOG"; then
-    GATE_TC=$(python3 -c "
-import json
-for line in open('$SESSION_LOG'):
+  # Well-formed event check only: a naive grep false-positives on commit-message text.
+  GATE_TC=$(python3 -c "
+import json, sys
+log = sys.argv[1]
+for line in open(log):
     line = line.strip()
     if not line.startswith('data: '): continue
     try: d = json.loads(line[6:])
     except: continue
-    if d.get('type') == 'tool.approval_required':
-        print(d['tool_calls'][0]['id'])
-        break")
-    break
-  fi
+    if d.get('type') == 'tool.approval_required' and d.get('tool_calls'):
+        print(d['tool_calls'][0].get('id', ''))
+        break
+" "$SESSION_LOG" 2>/dev/null)
+  [ -n "$GATE_TC" ] && break
 
   if grep -q "503" "$SESSION_LOG" && [ "$attempt" -eq 1 ]; then
     say "WARN  attempt $attempt hit 503 capacity, retrying with fresh session"
@@ -113,7 +123,13 @@ done
 if [ -n "$GATE_TC" ]; then
   echo "PASS  triage: approval gate fired"; pass=$((pass+1))
 else
-  echo "FAIL  triage: no approval gate"; fail=$((fail+1))
+  TOOL_CALLS=$(grep -o '"function":{"name":"[^"]*"' "$SESSION_LOG" 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$TOOL_CALLS" -eq 0 ]; then
+    echo "FAIL  triage: no tool calls at all (gateway/model failure)"
+  else
+    echo "FAIL  triage: agent made $TOOL_CALLS tool calls but no lab_restore gate (model skipped step 3)"
+  fi
+  fail=$((fail+1))
 fi
 
 METRIC_OK=$(python3 -c "
