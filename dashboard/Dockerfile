@@ -1,7 +1,7 @@
 FROM node:22.14-alpine
 WORKDIR /app
-COPY package.json tsconfig.json next.config.mjs ./
-RUN corepack enable && npm install
+COPY package.json package-lock.json ./
+RUN corepack enable && npm ci
 COPY app ./app
 ENV NODE_ENV=production
 ENV PORT=3002

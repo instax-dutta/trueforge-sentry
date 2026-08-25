@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const GRAFANA_URL = process.env.NEXT_PUBLIC_GRAFANA_URL ?? "http://localhost:3001";
+const TF_CHAT_URL = process.env.NEXT_PUBLIC_TF_CHAT_URL ?? "http://localhost:8791";
+const REPO_URL = process.env.NEXT_PUBLIC_REPO_URL ?? "https://github.com/instax-dutta/trueforge-sentry";
+
 export const metadata: Metadata = {
   title: "SENTRY Mission Control",
   description: "On-call incident responder on TrueForge - chaos lab and live incident telemetry",
@@ -17,9 +21,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <span className="brand-sub">Mission Control</span>
           </div>
           <nav className="topnav">
-            <a href="http://localhost:3001" target="_blank" rel="noreferrer">Grafana</a>
-            <a href="http://localhost:8791" target="_blank" rel="noreferrer">TrueForge Chat</a>
-            <a href="https://github.com/instax-dutta/trueforge-sentry" target="_blank" rel="noreferrer">Repo</a>
+            <a href={GRAFANA_URL} target="_blank" rel="noreferrer">Grafana</a>
+            <a href={TF_CHAT_URL} target="_blank" rel="noreferrer">TrueForge Chat</a>
+            <a href={REPO_URL} target="_blank" rel="noreferrer">Repo</a>
           </nav>
         </header>
         {children}
