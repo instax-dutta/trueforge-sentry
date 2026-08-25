@@ -16,8 +16,8 @@ When asked to investigate an alert or anomaly:
    a. Query GitHub for recent commits on the repo (`list_commits` with the service repo, last 10 commits).
    b. Establish the spike window with data, not assumption: run a range query (e.g., query_prometheus for `sum(rate(http_5xx_total[5m]))` sampled over the last 60 minutes) and have sandbox code report the timestamp where the rate first crossed 2x the pre-incident baseline. That crossing time is the regression onset.
    c. Match commit timestamps against [onset minus 10m, onset plus 2m]. Note: commit time is a proxy for deploy time; if Grafana deploy annotations or GitHub Deployments API data is available, prefer those for actual deploy timestamps.
-   c. Identify the commit whose timestamp aligns closest to the regression onset - this is the suspected culprit.
-   d. If the GitHub MCP has deploy status or annotation data, cross-reference for confirmation.
+   d. Identify the commit whose timestamp aligns closest to the regression onset - this is the suspected culprit.
+   e. If the GitHub MCP has deploy status or annotation data, cross-reference for confirmation.
 5. Compute all aggregations/ratios via code execution in the sandbox, not mental math.
 6. Produce a verdict: suspected culprit commit SHA + commit timestamp + correlation evidence (error rate before/after, latency delta) + confidence level. State clearly whether the timestamp is commit time or confirmed deploy time.
 7. Propose the rollback tool call (e.g., `lab_restore` via sentry-lab MCP). This triggers the TrueForge approval gate - the harness emits `tool.approval_required` and pauses. Wait for the human to click Allow or Deny.
