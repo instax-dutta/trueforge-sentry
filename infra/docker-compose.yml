@@ -22,6 +22,21 @@ services:
       - shop
     restart: unless-stopped
 
+
+  dashboard:
+    build:
+      context: ../dashboard
+      dockerfile: Dockerfile
+    environment:
+      PROMETHEUS_URL: http://prometheus:9090
+      LAB_MCP_URL: http://host.docker.internal:8100/mcp
+      LAB_MCP_TOKEN: ${LAB_MCP_TOKEN:-}
+    ports:
+      - "3002:3002"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
   prometheus:
     image: prom/prometheus:v3.1.0
     volumes:
