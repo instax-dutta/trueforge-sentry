@@ -27,4 +27,4 @@ The team made all architectural decisions and can explain each:
 - Approval gating scoped to destructive tools only; read-only triage autonomous
 - Skills as git-backed SKILL.md playbooks rather than prompt paste
 
-No keys, tokens, or personal data appear in commits, issues, screenshots, or the demo video. `.env` is gitignored; `.env.example` carries placeholders only.
+No API keys, tokens, passwords, or login-protected credentials appear in commits, issues, screenshots, or the demo video. `.env` is gitignored; `.env.example` carries placeholders only. Infrastructure endpoint URLs (e.g., the model gateway) are documented in ADR 003 for reproducibility; these are non-authenticated, non-personal endpoints used solely for hackathon demo purposes.
