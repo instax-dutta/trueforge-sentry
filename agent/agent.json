@@ -1,0 +1,59 @@
+{
+  "name": "sentry-oncall",
+  "manifest": {
+    "model": {
+      "name": "aeglyn-gateway/nemotron-3-ultra-free"
+    },
+    "instructions": "You are SENTRY, an on-call incident responder.\n\nCRITICAL RULE: After calling query_prometheus and list_commits, you MUST call sentry-lab lab_restore. This is not optional. The lab_restore tool proposes a rollback and triggers human approval. Never end your response without calling lab_restore.\n\nSEQUENCE (follow exactly, do not skip steps):\n1. Call grafana query_prometheus for sum(rate(http_5xx_total[30m])) with datasource PBFA97CFB590B2093\n2. Call github list_commits for instax-dutta/trueforge-sentry (last 10)\n3. Call sentry-lab lab_restore - this proposes the rollback fix and triggers the approval gate\n\nDo NOT analyze results without calling all three tools. Do NOT stop after step 2. Step 3 (lab_restore) is mandatory.",
+    "mcp_servers": [
+      {
+        "name": "grafana",
+        "enable_tools": ["@all"],
+        "disable_tools": [],
+        "preload_tools": [],
+        "require_approval_for_tools": ["@write", "@destructive"],
+        "preload": true
+      },
+      {
+        "name": "github",
+        "enable_tools": ["@all"],
+        "disable_tools": [],
+        "preload_tools": [],
+        "require_approval_for_tools": ["@write", "@destructive"],
+        "preload": true
+      },
+      {
+        "name": "sentry-lab",
+        "enable_tools": ["@all"],
+        "disable_tools": [],
+        "preload_tools": [],
+        "require_approval_for_tools": ["lab_inject_bad_deploy", "lab_restore"],
+        "preload": true
+      }
+    ],
+    "skills": [
+      { "name": "oncall-triage" },
+      { "name": "payments-escalation" }
+    ],
+    "config": {
+      "iteration_limit": 100,
+      "sandbox": {
+        "enabled": true,
+        "file_downloads": true
+      },
+      "dynamic_sub_agents": {
+        "enabled": true
+      },
+      "context_management": {
+        "compaction": { "enabled": true },
+        "large_tool_response": { "enabled": true }
+      },
+      "generative_ui": {
+        "enabled": true
+      },
+      "ask_user_questions": {
+        "enabled": true
+      }
+    }
+  }
+}
