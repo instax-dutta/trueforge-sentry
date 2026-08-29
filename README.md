@@ -196,7 +196,7 @@ trueforge-sentry/
 ## Links
 
 - **Blog post:** [We gave an AI agent a licence to act - and built the leash](https://blog.sdad.pro/blog/sentry-licence-to-act)
-- **Demo video:** *(coming soon)*
+- **Demo video:** *(record and add link here before submission)*
 - **Hackathon:** [The Agent Harness Hackathon](https://www.wemakedevs.org/hackathons/trueforge)
 - **TrueForge:** [trueforge.dev](https://trueforge.dev) | [GitHub](https://github.com/truefoundry/trueforge)
 
