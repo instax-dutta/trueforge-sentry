@@ -6,7 +6,7 @@ SENTRY needs a model that reliably makes multi-step tool calls (Grafana query, G
 
 ## Decision
 
-Route through a personal OpenAI-compatible gateway (`https://omni.aeglyn.site/v1`) with three tiers selected by live probes on Aug 23: dev iteration on `nemotron-3.5-lightning-free` (~3s latency, clean JSON tool calls), demo takes on `nemotron-3-ultra-free` (~21s, strongest reasoning for the recorded run), slow fallback lane `hy3-free` then `x-preview-f-free`. Sessions use sanitized two-segment model names; raw slashed FQNs resolve only upstream.
+Route through a personal OpenAI-compatible gateway (`https://omni.kashyalabanavli.site/v1`) with three tiers selected by live probes on Aug 23: dev iteration on `nemotron-3.5-lightning-free` (~3s latency, clean JSON tool calls), demo takes on `nemotron-3-ultra-free` (~21s, strongest reasoning for the recorded run), slow fallback lane `hy3-free` then `x-preview-f-free`. Sessions use sanitized two-segment model names; raw slashed FQNs resolve only upstream.
 
 ## Consequences
 
